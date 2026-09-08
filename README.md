@@ -10,14 +10,16 @@ ACCESS.md also covers exactly what a visitor can see.
 
 ## Stack
 
-React · React Router · Vite, deployed static to GitHub Pages. Data and auth from
+React · React Router · Vite, deployed static to Vercel. Data and auth from
 Supabase (Postgres + row-level security). `framer-motion`, `recharts`,
 `lucide-react`, `date-fns`. No three.js, GSAP, Lottie or smooth-scroll library —
 the ambient layer is plain Canvas 2D.
 
-Routing is hash-based (`/#/dashboard`) because GitHub Pages cannot rewrite deep
-links to `index.html`. Move to `BrowserRouter` if you ever host somewhere that
-can (Netlify, Vercel, Cloudflare Pages).
+Routing is currently hash-based (`/#/dashboard`), a holdover from GitHub Pages,
+which cannot rewrite deep links to `index.html`. Vercel can, and `vercel.json`
+already has the rewrite, so switching `HashRouter` to `BrowserRouter` in
+`src/main.jsx` will work whenever you want the cleaner URLs. Nothing else needs
+to change.
 
 ## Routes
 
@@ -35,14 +37,18 @@ tells you whether you are viewing or editing.
 1. **Create a Supabase project** (free tier), open the SQL editor, paste
    `supabase/schema.sql`, put your email where it says to, and run it. That file
    creates the tables *and* the access rules — it is the security boundary, not
-   the app.
+   the app. Then turn off public sign-ups and add yourself as a user — two
+   clicks, and without them anyone can create an account. ACCESS.md has the
+   exact path.
 2. **Copy `.env.example` to `.env`** and fill in the project URL, the anon key
    and your email.
 3. **`npm install && npm run dev`** — it runs at `localhost:5173`, empty. Every
    panel tells you what to add.
-4. **Deploy.** Add the same three values in GitHub under Settings → Secrets and
-   variables → Actions → *Variables*, enable Pages with source "GitHub Actions",
-   and push to `main`.
+4. **Deploy.** Import the repo at [vercel.com/new](https://vercel.com/new). It
+   detects Vite and reads `vercel.json`, so the build settings need no edits.
+   Add the same three values under Settings → Environment Variables, then
+   redeploy — Vite inlines `VITE_*` at build time, so a variable added after a
+   build is not in the bundle until the next one.
 5. **Optional:** `npm run seed` loads sample rows if you'd rather look at a full
    dashboard than an empty one. You don't need it.
 

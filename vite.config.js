@@ -3,9 +3,10 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 
 /**
- * GitHub Pages serves this project at /<repo-name>/, not at the domain root,
- * so every asset URL needs that prefix. The deploy workflow sets BASE_PATH;
- * locally it falls back to "/" so `npm run dev` behaves normally.
+ * Vercel serves the site from the domain root, so assets need no path prefix
+ * and `base` stays "/". If you ever move to a host that serves from a
+ * subdirectory (GitHub Pages puts a project site at /<repo-name>/), set
+ * BASE_PATH in that host's build environment.
  */
 export default defineConfig({
   base: process.env.BASE_PATH || "/",

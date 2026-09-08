@@ -2,7 +2,7 @@
 
 ## The short version
 
-The site is a set of static files on GitHub Pages. Anyone can download the whole
+The site is a set of static files on Vercel. Anyone can download the whole
 bundle, read every line of it, and flip any variable in it. So **nothing in the
 browser can be a lock.**
 
@@ -21,27 +21,65 @@ second, and it's the one that matters.
 | Edit affordances | `useCanEdit()` | Hides buttons from visitors. Cosmetic. |
 | `/admin` redirect | `src/pages/Admin.jsx` | Courtesy redirect. Cosmetic. |
 | Sign-in | `src/pages/Login.jsx` | Emails you a one-time link. No password exists. |
+| **Who may sign in** | **Supabase → Authentication** | **Server-side. Sign-ups off + a user list you control.** |
 | Write funnel | `src/lib/db.js` → `write.*` | One place to audit every mutation. |
 | **RLS policies** | **`supabase/schema.sql`** | **The lock. Server-side. Not bypassable from the browser.** |
 
-There is no password field anywhere. A password compared in JavaScript is
-readable by anyone who opens devtools, and on a static host there's nowhere else
-to compare it. Magic-link sign-in avoids the problem entirely: there is no
-password to steal, guess, or reuse.
+There is no password field anywhere, and no default account. A password compared
+in JavaScript is readable by anyone who opens devtools, and on a static host
+there's nowhere else to compare it. Magic-link sign-in avoids the problem
+entirely: there is no password to steal, guess, or reuse, and nothing to hand
+out or leak.
+
+### Close sign-ups, or strangers can make accounts
+
+Supabase lets anyone request a link and creates an account for them by default.
+That does not put your data at risk — `is_owner()` refuses their writes either
+way, and an account is not permission — but it does mean a stranger can land in
+your `auth.users` table, and there is no reason to allow it on a dashboard with
+exactly one user.
+
+**Authentication → Sign In / Providers → disable "Allow new users to sign up".**
+
+With that off, only accounts you create yourself can sign in. Create your own
+first, or you will lock yourself out of your own dashboard:
+
+**Authentication → Users → Add user**, your address, "Auto Confirm User" on.
+
+You never set a password for it. Sign-in is still the emailed link; the account
+simply has to exist beforehand for one to be issued. Someone who is not in that
+table gets no link, so they never sign in at all.
+
+That leaves two independent controls, and you want both:
+
+| Question | Where you set it |
+| --- | --- |
+| Who can sign in at all? | Supabase → Authentication → Users (with sign-ups off) |
+| Who can edit once signed in? | `owner_emails()` in `supabase/schema.sql` |
+
+Keep them in step. Removing someone from `owner_emails()` leaves them able to
+sign in and read; deleting their row in Users is what removes them entirely.
 
 ## Setup, in order
 
 1. Create a Supabase project (free tier is fine).
 2. Open **SQL Editor → New query**, paste `supabase/schema.sql`, change
    `you@example.com` to your real address, and run it.
-3. **Settings → API**: copy the project URL and the `anon` key.
-4. Put both in `.env` locally, and in GitHub under **Settings → Secrets and
-   variables → Actions → Variables** as `VITE_SUPABASE_URL`,
-   `VITE_SUPABASE_ANON_KEY` and `VITE_OWNER_EMAILS`.
-5. **Authentication → URL Configuration**: add your Pages URL
-   (`https://<you>.github.io/<repo>/`) to the redirect allowlist, or the sign-in
-   link will bounce you somewhere else.
-6. Push to `main`. The workflow builds and deploys.
+3. **Authentication → Sign In / Providers**: turn off "Allow new users to sign
+   up", then **Authentication → Users → Add user** to create your own account
+   with "Auto Confirm User" on. Do it in that order — see below.
+4. **Settings → API**: copy the project URL and the `anon` key.
+5. Put both in `.env` locally, and in Vercel under **Settings → Environment
+   Variables** as `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and
+   `VITE_OWNER_EMAILS`, for all three environments.
+6. **Authentication → URL Configuration**: set the Site URL to your production
+   domain and add it to the redirect allowlist, or the sign-in link will bounce
+   you somewhere else. Add `https://*-<your-vercel-scope>.vercel.app/**` too if
+   you want sign-in to work on preview deployments — each pull request gets its
+   own hostname, and a link issued for one is only valid for the origin it was
+   requested from.
+7. Push. Vercel builds and deploys the production branch; every other branch
+   gets a preview URL.
 
 ## About the anon key being public
 
@@ -81,9 +119,19 @@ every client name and contact, every deal value, retainer and probability, your
 pipeline against target, which deals are grant-funded, and your attendance record
 down to clock-in times.
 
-That is a fairly complete commercial picture of the business, and on GitHub Pages
-the URL is the only thing standing between it and the open internet — a public
-repo also means the site is trivially discoverable.
+That is a fairly complete commercial picture of the business, and the URL is the
+only thing standing between it and the open internet.
+
+Vercel does not require the repository to be public, so making the repo private
+is worth doing regardless — it stops the source, and the owner allowlist in it,
+from being read by anyone who searches for it. It does not make the *site*
+private: the deployment stays open to anyone with the link either way. Only
+option 2 or 3 below changes that.
+
+Preview deployments are worth a thought as well. Every branch you push gets its
+own public URL pointing at the same production database, so a half-finished
+branch is a second live copy of the same data. Vercel can require login to view
+previews under Settings → Deployment Protection.
 
 Three ways to handle it:
 
