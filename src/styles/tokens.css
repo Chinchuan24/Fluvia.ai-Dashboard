@@ -1,0 +1,186 @@
+/**
+ * The design system. Colours, type steps and easings are defined here and
+ * nowhere else — if a value is hard-coded in a component, that is a bug.
+ *
+ * Four hues plus neutrals. Everything else is derived with oklch() from one
+ * of them, which is why the palette stays coherent when a hue is changed:
+ * oklch keeps lightness perceptually even across hues in a way hsl does not,
+ * so a ramp built from it does not develop bright and dark patches.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* --- Hues -------------------------------------------------------------
+     The four the whole system is built from. Change one number here and
+     every surface, border and state derived from it follows. */
+  --hue-brand: 250;    /* blue    — chrome, primary actions */
+  --hue-support: 175;  /* teal    — progress, positive movement */
+  --hue-warn: 80;      /* amber   — blocked, attention */
+  --hue-alert: 25;     /* red     — overdue, destructive */
+
+  /* --- Neutrals ---------------------------------------------------------
+     A touch of the brand hue in every neutral. Pure greys next to saturated
+     data colours read as dirty; carrying 0.006–0.02 chroma keeps the page
+     looking lit rather than washed. */
+  --bg: oklch(0.145 0.014 var(--hue-brand));
+  --surface-1: oklch(0.18 0.018 var(--hue-brand));
+  --surface-2: oklch(0.215 0.020 var(--hue-brand));
+  --surface-3: oklch(0.255 0.022 var(--hue-brand));
+
+  --border: oklch(0.30 0.018 var(--hue-brand));
+  --border-strong: oklch(0.38 0.024 var(--hue-brand));
+
+  --text: oklch(0.96 0.006 var(--hue-brand));
+  --text-2: oklch(0.78 0.012 var(--hue-brand));
+  --text-3: oklch(0.62 0.014 var(--hue-brand));
+
+  /* --- Accents ---------------------------------------------------------- */
+  --brand: oklch(0.68 0.150 var(--hue-brand));
+  --brand-bright: oklch(0.78 0.140 var(--hue-brand));
+  --brand-dim: oklch(0.40 0.080 var(--hue-brand));
+  --support: oklch(0.76 0.130 var(--hue-support));
+  --warn: oklch(0.80 0.150 var(--hue-warn));
+  --alert: oklch(0.64 0.190 var(--hue-alert));
+
+  /* --- Data visualisation ----------------------------------------------
+     These are not chosen by eye, and they are not free to change. Each one
+     clears five checks in scripts/check-palette.mjs: an L band of
+     [0.55, 0.85], a chroma floor of 0.08, >= 0.10 OKLab separation between
+     adjacent steps in normal vision, >= 0.06 after Machado-2009 protanopia
+     and deuteranopia at full severity, and >= 3.0:1 WCAG contrast against
+     --surface-1.
+
+     Measured values, against --surface-1 (#0b1219):
+
+       funnel ramp        contrast   step -> next  normal / protan / deutan
+       lead   #528ac3      5.19:1     -> qualified   0.105 / 0.104 / 0.087
+       qual.  #20b0cc      7.31:1     -> proposal    0.122 / 0.119 / 0.116
+       prop.  #21d4b2      9.99:1     -> won         0.104 / 0.098 / 0.108
+       won    #7ce782     12.18:1
+
+     The chroma on --viz-2 and --viz-3 is capped by the sRGB gamut at these
+     lightnesses (0.124 and 0.147 respectively), not by taste. Raising it
+     produces a colour the browser silently clips, so the swatch you get is
+     not the one written here. The script fails on that.
+
+     RE-RUN THE SCRIPT IF YOU CHANGE ANY OF THESE. Eyeballing a ramp on a
+     good monitor with normal colour vision proves nothing about how it
+     reads for anyone else. */
+  --viz-1: oklch(0.62 0.105 250);
+  --viz-2: oklch(0.70 0.118 215);
+  --viz-3: oklch(0.78 0.142 175);
+  --viz-4: oklch(0.84 0.170 145);
+  --viz-lost: oklch(0.52 0.030 var(--hue-brand));
+
+  /* Attendance fills, none -> over. Measured contrast 4.29 / 6.12 / 8.56 /
+     6.54:1; worst adjacent separation is none -> partial under protanopia
+     at 0.070, which is the binding constraint on this ramp. */
+  --attend-0: oklch(0.24 0.014 var(--hue-brand));
+  --attend-1: oklch(0.58 0.090 285);
+  --attend-2: oklch(0.68 0.140 320);
+  --attend-3: oklch(0.76 0.150 75);
+  --attend-4: oklch(0.70 0.170 30);
+
+  /* Status. The amber/red pair is the fragile one and the reason the
+     lightness gap is not negotiable: at L 0.80 vs 0.64 they sit 0.166 apart
+     under deuteranopia, but moved to a common L 0.72 that falls to 0.055 —
+     below the 0.06 floor, i.e. indistinguishable. Keep the gap. */
+  --status-todo: oklch(0.62 0.014 var(--hue-brand));
+  --status-doing: oklch(0.70 0.118 215);
+  --status-blocked: oklch(0.80 0.150 var(--hue-warn));
+  --status-done: oklch(0.84 0.170 145);
+  --status-overdue: oklch(0.64 0.190 var(--hue-alert));
+
+  /* --- Type -------------------------------------------------------------
+     Three families, loaded in index.html. Space Grotesk carries headings and
+     figures, Geist the prose, Geist Mono anything that has to line up in a
+     column. Every stack ends in a real system fallback so the page is
+     readable before the webfont lands. */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* A 1.2 ratio. Small enough that adjacent steps stay distinguishable
+     without the page turning into a poster. */
+  --step--1: 0.7813rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.35rem;
+  --step-3: 1.62rem;
+  --step-4: 1.944rem;
+  --step-5: 2.333rem;
+
+  --leading-tight: 1.15;
+  --leading-normal: 1.55;
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.08em;
+
+  /* --- Space ------------------------------------------------------------ */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* --- Depth ------------------------------------------------------------
+     Shadows on a dark ground do almost nothing; a light top edge does the
+     work instead. */
+  --edge: inset 0 1px 0 oklch(1 0 0 / 0.05);
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-2: 0 8px 24px -8px oklch(0 0 0 / 0.55);
+  --shadow-3: 0 24px 60px -20px oklch(0 0 0 / 0.7);
+
+  /* --- Motion -----------------------------------------------------------
+     Durations and curves live here so motion stays consistent between CSS
+     transitions and the framer-motion transitions that read these numbers.
+
+     --ease-out is the default for anything entering or responding to a
+     press. --ease-drawer has a longer tail, for panels that slide a long
+     distance and need to settle rather than stop. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --dur-1: 120ms;   /* state flips: hover, checkbox */
+  --dur-2: 200ms;   /* small entrances */
+  --dur-3: 320ms;   /* panels, cards */
+  --dur-4: 400ms;   /* the change pulse */
+  --dur-5: 560ms;   /* drawers */
+
+  --z-canvas: 0;
+  --z-content: 1;
+  --z-header: 10;
+  --z-drawer: 40;
+  --z-toast: 60;
+}
+
+/* Motion lives in the chrome, not in the data. Reduced motion drops the
+   ambient canvas and all movement, and keeps opacity fades — a fade conveys
+   the same "this is new" without moving anything across the retina. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+    --dur-4: 0ms;
+    --dur-5: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

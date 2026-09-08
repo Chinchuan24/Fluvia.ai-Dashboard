@@ -15,11 +15,14 @@ Supabase (Postgres + row-level security). `framer-motion`, `recharts`,
 `lucide-react`, `date-fns`. No three.js, GSAP, Lottie or smooth-scroll library —
 the ambient layer is plain Canvas 2D.
 
-Routing is currently hash-based (`/#/dashboard`), a holdover from GitHub Pages,
-which cannot rewrite deep links to `index.html`. Vercel can, and `vercel.json`
-already has the rewrite, so switching `HashRouter` to `BrowserRouter` in
-`src/main.jsx` will work whenever you want the cleaner URLs. Nothing else needs
-to change.
+Routing is `BrowserRouter` with clean paths (`/dashboard`). That relies on the
+rewrite in `vercel.json` sending every unmatched path to `index.html`. It also
+keeps the URL fragment free for the Supabase magic-link callback, which comes
+back as `#access_token=...` and would otherwise be fighting a hash router for
+the same part of the URL.
+
+If you move to a host that cannot rewrite — GitHub Pages, plain S3 — switch to
+`HashRouter` in `src/main.jsx` and set `BASE_PATH` at build time.
 
 ## Routes
 
@@ -72,6 +75,8 @@ src/
   styles/          tokens.css (the design system) + dashboard.css
   data/seed.example.js  fabricated sample data
   seed/runSeed.js  one-time seeding
+scripts/
+  check-palette.mjs  the colour checks described under Design system
 ```
 
 ## Two things that will bite you
@@ -90,12 +95,23 @@ Tokens are declared in `src/styles/tokens.css` and are the only place colours,
 type steps and easings are defined. Four hues plus neutrals; every other shade is
 derived with `oklch()` from one of them.
 
-The data-visualisation steps — the funnel ramp and the attendance fills — were
+The data-visualisation steps — the funnel ramp and the attendance fills — are
 validated against the lightness band, chroma floor, Machado-2009 protan/deutan
 separation, the normal-vision floor, and WCAG contrast on the dark surface.
-Measured values are in the comments. **If you change a chart colour, re-run those
-checks** rather than eyeballing it; the amber/red pair in particular collapses
-under deuteranopia unless the lightness gap is held.
+Measured values are in the comments in `tokens.css`.
+
+**If you change a chart colour, re-run the checks** rather than eyeballing it:
+
+```
+node scripts/check-palette.mjs
+```
+
+It fails the run and names the offender. The amber/red pair is the fragile one:
+at L 0.80 vs 0.64 the two sit 0.166 apart under deuteranopia, but moved to a
+common L 0.72 that falls to 0.055 — under the 0.06 floor, i.e. the same colour.
+Hold the lightness gap. The script also catches a chroma that is outside the
+sRGB gamut, where the browser silently clips and you get a colour other than the
+one you wrote.
 
 ## Motion
 

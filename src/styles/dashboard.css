@@ -1,0 +1,446 @@
+@import "./tokens.css";
+
+/* --- Reset ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+  font-weight: 600;
+}
+
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+a { color: var(--brand-bright); }
+
+:focus-visible {
+  outline: 2px solid var(--brand-bright);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Screen-reader-only, for the labels that would otherwise be carried by
+   colour alone. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Layout --------------------------------------------------------------- */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+}
+
+.shell {
+  position: relative;
+  z-index: var(--z-content);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background: oklch(0.145 0.014 250 / 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.bar__brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-1);
+  letter-spacing: var(--tracking-tight);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.bar__brand span { color: var(--brand-bright); }
+
+.bar__spacer { flex: 1; }
+
+.bar__clock {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.main {
+  flex: 1;
+  width: min(1280px, 100%);
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+  display: grid;
+  gap: var(--space-5);
+  /* Rows take their natural height. Without this the grid stretches a single
+     child to fill the viewport, and a short notice ends up with its lines
+     spread across the whole page. */
+  align-content: start;
+}
+
+/* --- Chips and buttons ---------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--step--1);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.chip--edit {
+  border-color: color-mix(in oklch, var(--support) 45%, transparent);
+  color: var(--support);
+}
+
+.chip--warn { border-color: color-mix(in oklch, var(--warn) 45%, transparent); color: var(--warn); }
+.chip--alert { border-color: color-mix(in oklch, var(--alert) 50%, transparent); color: var(--alert); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--step--1);
+  transition: background var(--dur-1) var(--ease-out),
+              border-color var(--dur-1) var(--ease-out),
+              transform var(--dur-1) var(--ease-out);
+}
+
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--brand);
+  border-color: transparent;
+  color: oklch(0.15 0.02 250);
+  font-weight: 600;
+}
+
+.btn--ghost { background: transparent; border-color: var(--border); }
+.btn--danger { color: var(--alert); border-color: color-mix(in oklch, var(--alert) 40%, transparent); }
+
+/* Hover effects only where hovering is a real thing the device does. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) { background: var(--surface-3); border-color: var(--brand-dim); }
+  .btn--primary:hover:not(:disabled) { background: var(--brand-bright); }
+  .card:hover { border-color: var(--border-strong); }
+  .week:hover .week__bar { filter: brightness(1.15); }
+}
+
+/* --- Cards ---------------------------------------------------------------- */
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--edge), var(--shadow-1);
+  padding: var(--space-5);
+  transition: border-color var(--dur-2) var(--ease-out);
+}
+
+.card__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.card__title {
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+.card__hint {
+  font-size: var(--step--1);
+  color: var(--text-3);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A record that changed gets one 400ms border pulse. It does not animate its
+   own value — a number that slides while you are reading it is harder to
+   read, not more alive. */
+@keyframes pulse-border {
+  from { border-color: var(--support); box-shadow: 0 0 0 3px color-mix(in oklch, var(--support) 22%, transparent); }
+  to   { border-color: var(--border); box-shadow: 0 0 0 0 transparent; }
+}
+
+.pulse { animation: pulse-border var(--dur-4) var(--ease-out); }
+
+/* --- Stat tiles ----------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat { display: grid; gap: var(--space-1); }
+
+.stat__label {
+  font-size: var(--step--1);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.stat__value {
+  font-family: var(--font-display);
+  font-size: var(--step-4);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+}
+
+.stat__note { font-size: var(--step--1); color: var(--text-3); }
+
+/* --- The twenty-week grid ------------------------------------------------- */
+
+.grid-scroll { overflow-x: auto; padding-bottom: var(--space-3); }
+
+.weeks {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(46px, 1fr));
+  gap: var(--space-2);
+  min-width: 940px;
+  align-items: end;
+}
+
+.week {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  padding: var(--space-2) 0;
+  border-radius: var(--radius);
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+
+.week--current { border-color: var(--brand-dim); background: var(--surface-1); }
+.week--past .week__label { color: var(--text-3); }
+.week[aria-pressed="true"] { border-color: var(--brand); background: var(--surface-2); }
+
+.week__track {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.week__bar {
+  width: 100%;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: linear-gradient(to top, var(--viz-1), var(--viz-3));
+  transition: filter var(--dur-1) var(--ease-out);
+}
+
+.week__bar--blocked { background: linear-gradient(to top, var(--viz-1), var(--status-blocked)); }
+.week__bar--done { background: linear-gradient(to top, var(--viz-3), var(--viz-4)); }
+
+.week__label {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text-2);
+}
+
+.week__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+
+/* --- Lists ---------------------------------------------------------------- */
+
+.list { display: grid; gap: var(--space-2); }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.row__title { font-weight: 500; }
+.row__meta { font-size: var(--step--1); color: var(--text-3); }
+.row__spacer { flex: 1; }
+
+/* Status is never carried by colour alone — every dot has a text label
+   beside it or an accessible name on it. */
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dot--todo { background: var(--status-todo); }
+.dot--doing { background: var(--status-doing); }
+.dot--blocked { background: var(--status-blocked); }
+.dot--done { background: var(--status-done); }
+.dot--overdue { background: var(--status-overdue); }
+
+/* --- Attendance ----------------------------------------------------------- */
+
+.attend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18px, 1fr));
+  gap: 4px;
+}
+
+.attend__cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--attend-0);
+  border: 1px solid transparent;
+}
+
+.attend__cell--1 { background: var(--attend-1); }
+.attend__cell--2 { background: var(--attend-2); }
+.attend__cell--3 { background: var(--attend-3); }
+.attend__cell--4 { background: var(--attend-4); }
+.attend__cell--today { border-color: var(--text); }
+
+/* --- Meters --------------------------------------------------------------- */
+
+.meter {
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.meter__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--viz-2), var(--viz-4));
+}
+
+/* --- Empty states --------------------------------------------------------- */
+
+.empty {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+  justify-items: start;
+  padding: var(--space-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-3);
+  font-size: var(--step--1);
+}
+
+.empty__title { color: var(--text-2); font-weight: 500; font-size: var(--step-0); }
+
+/* --- Forms ---------------------------------------------------------------- */
+
+.field { display: grid; gap: var(--space-2); }
+
+.field__label {
+  font-size: var(--step--1);
+  color: var(--text-2);
+}
+
+.input,
+.select,
+.textarea {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--text);
+  font: inherit;
+  width: 100%;
+}
+
+.textarea { min-height: 80px; resize: vertical; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+/* --- Notices -------------------------------------------------------------- */
+
+.notice {
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  font-size: var(--step--1);
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.notice--alert {
+  border-color: color-mix(in oklch, var(--alert) 45%, transparent);
+  background: color-mix(in oklch, var(--alert) 10%, var(--surface-1));
+}
+
+.notice--warn {
+  border-color: color-mix(in oklch, var(--warn) 45%, transparent);
+  background: color-mix(in oklch, var(--warn) 8%, var(--surface-1));
+}
+
+/* --- Page utilities ------------------------------------------------------- */
+
+.cols-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-5); }
+.centred { display: grid; place-items: center; min-height: 70vh; padding: var(--space-5); }
+.stack { display: grid; gap: var(--space-4); align-content: start; }
+.inline { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-3); }
+
+@media (max-width: 640px) {
+  .main { padding: var(--space-4) var(--space-3) var(--space-7); }
+  .card { padding: var(--space-4); }
+}

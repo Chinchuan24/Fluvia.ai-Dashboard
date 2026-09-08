@@ -14,4 +14,22 @@ export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        /**
+         * Split the heavy dependencies out of the app bundle. They change on
+         * their own schedule, so a change to the dashboard should not force a
+         * repeat download of the charting library. Recharts and framer-motion
+         * are the two big ones.
+         */
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          charts: ["recharts"],
+          motion: ["framer-motion"],
+          supabase: ["@supabase/supabase-js"],
+        },
+      },
+    },
+  },
 });
