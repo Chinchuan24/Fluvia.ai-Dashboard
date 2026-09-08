@@ -22,3 +22,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 dist-demo/
+
+# Impeccable (.claude/skills/impeccable) — the skill payload IS tracked; its
+# runtime scratch is not. The detector binary caches to ~/.impeccable/bin,
+# outside the repo, so it never lands here.
+**/skills/impeccable/scripts/.impeccable/
+**/.impeccable/hook.cache.json
+.impeccable/live/
+.claude/settings.local.json
