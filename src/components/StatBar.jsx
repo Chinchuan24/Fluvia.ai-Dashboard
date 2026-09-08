@@ -31,7 +31,11 @@ export default function StatBar({ data }) {
       label: "Hours logged",
       value: attendance.totalHours,
       note: attendance.streak ? `${attendance.streak}-day streak` : `${attendance.daysLogged} days`,
-      format: (n) => duration(n),
+      // duration() renders 0 as an em dash, which reads as "nothing logged".
+      // Correct for a single day's row, wrong for a running total: during the
+      // count-up the figure passes through zero, and for ~900ms the headline
+      // would claim no hours exist at all.
+      format: (n) => (n > 0 ? duration(n) : "0h"),
     },
     {
       label: "Milestones",
